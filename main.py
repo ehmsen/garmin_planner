@@ -1,21 +1,8 @@
 import argparse
 import logging
 from pathlib import Path
-from garmin_planner import WorkoutLexer, WorkoutParser, GarminClient, logger, GarminVisitor
+from garmin_planner import WorkoutLexer, WorkoutParser, GarminClient, logger, GarminVisitor, proccess_wdl_file
 import json
-
-def process_workout_file(file_path: Path, parser, lexer):
-    """Process a single workout file and return the Garmin JSON."""
-    logging.info(f"Processing workout file: {file_path}")
-    try:
-        with open(file_path, 'r') as f:
-            data = f.read()
-        
-        result = parser.parse(data, lexer)
-        return result
-    except Exception as e:
-        logging.error(f"Error processing file {file_path}: {str(e)}")
-        return None
 
 def main():
     parser = argparse.ArgumentParser(
@@ -55,7 +42,7 @@ def main():
             logging.error(f"File not found: {file_path}")
             continue
             
-        workout_ast = process_workout_file(file_path, parser, lexer)
+        workout_ast = process_wdl_file(file_path, parser, lexer)
         # import pprint
         # pprint.pp(workout_ast)
         if workout_ast:
@@ -65,10 +52,11 @@ def main():
                 garmin_json = json.dumps(garmin_json_dict)
                 # import pprint
                 # pprint.pp(garmin_json_dict)
-                # print(visitor.username)
-                # print(visitor.password)
                 if visitor.username and visitor.password:
                     client = GarminClient(visitor.username, visitor.password)
+                    # out = client.getWorkout(1108430989)
+                    # import pprint
+                    # pprint.pp(out)
                     client.importWorkout(garmin_json)
                     logging.info(f"Successfully uploaded workout from {file_path}")
             except Exception as e:

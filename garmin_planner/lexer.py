@@ -1,5 +1,8 @@
 import ply.lex as lex
+import logging
 from .tokens import reserved, tokens
+
+logger = logging.getLogger(__name__)
 
 class WorkoutLexer:
     def __init__(self):
@@ -55,12 +58,8 @@ class WorkoutLexer:
     def t_STRING(self, t):
         r'\"(?P<string>[^\"\r\n\\]*(?:\\.[^\"\r\n\\]*)*)\"'
         r'\"(?P<string>[^\"\r\n]*)\"'
-        # r'\"([^\\\n]|(\\.))*?\"'
         t.value = self.lexer.lexmatch.group("string")
-        # print(f"TOKEN: {t}")
-        # print(f"STRING: {t.value}")
-        # print(f"STRING: {t.lexer.lexmatch.group(0)}")
-        # print(f"STRING: {t.lexer.lexmatch.group(1)}")
+        logger.debug(f"String token: {t.value}")
         return t
 
     def t_newline(self, t):
@@ -68,7 +67,7 @@ class WorkoutLexer:
         t.lexer.lineno += len(t.value)
 
     def t_error(self, t):
-        print(f"Illegal character '{t.value[0]}' at line '{t.lexer.lineno}' pos '{t.lexer.lexpos}'")
+        logger.error(f"Illegal character '{t.value[0]}' at line {t.lexer.lineno}, pos {t.lexer.lexpos}")
         t.lexer.skip(1)
 
     def build(self, **kwargs):

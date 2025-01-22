@@ -89,7 +89,7 @@ class GarminVisitor:
             "run": {"stepTypeId": 3, "stepTypeKey": "interval"},
             "recover": {"stepTypeId": 4, "stepTypeKey": "recovery"},
             "rest": {"stepTypeId": 5, "stepTypeKey": "rest"},
-            "other": {"stepTypeId": 6, "stepTypeKey": "other"}
+            "other": {"stepTypeId": 7, "stepTypeKey": "other"}
         }
 
         step = {

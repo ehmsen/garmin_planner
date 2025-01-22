@@ -1,0 +1,52 @@
+program "Jack Daniels 2nd Ed" {
+    max_weekly_milage 120.0
+    mpace 4:40 - 5:00
+    epace 5:00 - 6:00
+
+    # Weeks are taken in order
+
+    week 1 (0.8 * ) {
+        weekly_mileage = 0.8 * max_weekly_milage
+
+        run Q1 {
+            run 5.0 @ mpace
+        }
+
+        run Q2 {
+            run 2.0 @ epace
+        }
+
+        # Generic run - the parameters are divided among the days evenly
+        run {
+            warmup 10:00 @ epace
+            run weekly_milage @ epace
+            cooldown 10:00 @ epace
+        }
+    }
+
+    week 2 as 1 {
+        # Q1 same as for week 1 since it is not overriden
+
+        run Q2 {
+            run 6.0 @ mpace
+        }
+
+        # Same fil milage as week 1
+    }
+
+    week 3 {} # No training that week
+}
+
+plan "Jack Daniels 2nd Ed" 2025-02-01 {
+    max_weekly_milage 100.0
+
+    week {
+        monday: Q1
+        tuesday: fill
+        # wednesday - no training
+        thursday: fill
+        friday: fill
+        saturday: Q2
+        # sunday - no training
+    }
+}

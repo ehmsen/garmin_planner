@@ -1,6 +1,9 @@
 import ply.yacc as yacc
 from .tokens import tokens
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 intensities_defintions = {}
 durations_defintions = {}
@@ -359,8 +362,7 @@ class WorkoutParser:
 
     def p_error(self, p):
         if p:
-            print(f"Syntax error at line {p.lineno}, token='{p.type}', value='{p.value}'")
-            print(f"Remaining input: {p.lexer.lexdata[p.lexpos:]}")
-            print(f"Lexer state: pos={p.lexpos}, lineno={p.lineno}")
+            logger.error(f"Syntax error at line {p.lineno}, token='{p.type}', value='{p.value}'")
+            logger.debug(f"Remaining input: {self.parser.lexer.lexdata[p.lexpos:]}")
         else:
-            print("Syntax error at EOF")
+            logger.error("Syntax error at EOF")
