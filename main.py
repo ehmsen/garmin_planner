@@ -1,8 +1,10 @@
 import argparse
 import logging
 from pathlib import Path
-from garmin_planner import WorkoutLexer, WorkoutParser, GarminClient, logger, GarminVisitor, proccess_wdl_file
+from wdl import WDLLexer, WDLParser, GarminClient, GarminVisitor, process_wdl_file
 import json
+
+from wdl.utils import logger
 
 def main():
     parser = argparse.ArgumentParser(
@@ -33,8 +35,10 @@ def main():
     logger.setup_logging(args.log_file, args.log_level)
     
     # Initialize parser and lexer
-    lexer = WorkoutLexer().build()
-    parser = WorkoutParser().build()
+    lexer = WDLLexer()
+    lexer.build()
+    parser = WDLParser(lexer)
+    parser.build()
     
     # Process each file
     for file_path in args.files:
@@ -42,25 +46,32 @@ def main():
             logging.error(f"File not found: {file_path}")
             continue
             
-        workout_ast = process_wdl_file(file_path, parser, lexer)
+        workout_ast = process_wdl_file(file_path, parser)
         # import pprint
         # pprint.pp(workout_ast)
         if workout_ast:
             try:
                 visitor = GarminVisitor()
-                garmin_json_dict = visitor.visit(workout_ast)
-                garmin_json = json.dumps(garmin_json_dict)
+                garmin_workouts = visitor.visit(workout_ast)
                 # import pprint
+                # garmin_json_dict['workoutId'] = 42
                 # pprint.pp(garmin_json_dict)
                 if visitor.username and visitor.password:
-                    client = GarminClient(visitor.username, visitor.password)
-                    # out = client.getWorkout(1108430989)
+                    # client = GarminClient(visitor.username, visitor.password)
+                    # out = client.getWorkout(42)
+                    # out = client.getAllWorkouts()
                     # import pprint
                     # pprint.pp(out)
-                    client.importWorkout(garmin_json)
+
+                    for garmin_workout in garmin_workouts:
+                        garmin_workout_json = json.dumps(garmin_workout)
+                        # import pprint
+                        # pprint.pp(garmin_workout_json)
+                        # client.importWorkout(garmin_workout_json)
                     logging.info(f"Successfully uploaded workout from {file_path}")
             except Exception as e:
-                logging.error(f"Error uploading workout from {file_path}: {str(e)}")
+                logging.exception(f"Error uploading workout from {file_path}: {str(e)}")
+                raise e
 
 if __name__ == '__main__':
     main()

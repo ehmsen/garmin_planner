@@ -1,5 +1,5 @@
 from typing import Dict, Any, List
-from .parser import (
+from ..parsing.parser import (
     RootNode, DurationsNode, IntensitiesNode, WorkoutNode, WorkoutStepNode,
     WorkoutStepRepeatNode, DurationTimeNode, DurationDistanceNode,
     DurationCaloriesNode, DurationHRAboveBelowNode, DurationIDNode,
@@ -7,11 +7,31 @@ from .parser import (
     IntensityHRNode, IntensityPowerZoneNode, IntensityPowerNode, IntensityIDNode,
     GarminNode, GarminDefNode
 )
+import logging
+
+logger = logging.getLogger(__name__)
+
+def seconds_to_hms(seconds: int) -> str:
+    """Convert seconds to HH:MM:SS format"""
+
+    hours = seconds // (60*60)
+    seconds %= (60*60)
+    minutes = seconds // 60
+    seconds %= 60
+    if hours == 0:
+        return f"{minutes}:{seconds:02d}"
+    return f"{hours}:{minutes:02d}:{seconds:02d}"
+
+def meters_to_km(meters: int) -> float:
+    """Convert meters to kilometers with 2 decimal places"""
+
+    return str((meters // 10) / 100)
 
 class GarminVisitor:
     def __init__(self):
         self.durations: Dict[str, Any] = {}
         self.intensities: Dict[str, Any] = {}
+        self.workouts: List[Dict[str, Any]] = []
         self.step_order = 1
         self.username = None
         self.password = None
@@ -30,8 +50,9 @@ class GarminVisitor:
             if isinstance(child, (DurationsNode, IntensitiesNode, GarminNode)):
                 self.visit(child)
             elif isinstance(child, WorkoutNode):
-                return self.visit(child)
-        return {}
+                self.workouts.append(self.visit(child))
+                self.step_order = 1
+        return self.workouts
     
     def visit_GarminNode(self, node: GarminNode) -> Dict[str, Any]:
         for def_node in node.definitions:
@@ -53,6 +74,16 @@ class GarminVisitor:
             self.intensities[name] = self.visit(def_node.intensity)
 
     def visit_WorkoutNode(self, node: WorkoutNode) -> Dict[str, Any]:
+        dist = node.get_distance_estimate()
+        seconds = node.get_duration_estimate()
+
+        s = seconds_to_hms(seconds)
+        m = meters_to_km(dist)
+
+        logger.info(f"Processing workout: {node.name}")
+        logger.info(f"Workout time: {s}")
+        logger.info(f"Workout distance: {m} km")
+
         sport_type = {
             "run": {"sportTypeId": 1, "sportTypeKey": "running"},
             "strength": {"sportTypeId": 3, "sportTypeKey": "strength"}
@@ -153,7 +184,7 @@ class GarminVisitor:
         return step
 
     def visit_DurationTimeNode(self, node: DurationTimeNode) -> Dict[str, Any]:
-        total_seconds = node.time[0] * 3600 + node.time[1] * 60 + node.time[2]
+        total_seconds = node.get_duration()
         return {
             "conditionTypeId": 2,
             "conditionTypeKey": "time",
@@ -164,7 +195,7 @@ class GarminVisitor:
         return {
             "conditionTypeId": 3,
             "conditionTypeKey": "distance",
-            "endConditionValue": int(node.distance * 1000)  # Convert to meters
+            "endConditionValue": node.get_distance()
         }
 
     def visit_DurationCaloriesNode(self, node: DurationCaloriesNode) -> Dict[str, Any]:
@@ -187,9 +218,8 @@ class GarminVisitor:
         return duration
 
     def visit_IntensityPaceNode(self, node: IntensityPaceNode) -> Dict[str, Any]:
-        # Convert pace (min/km) to speed (m/s)
-        min_speed = 1000 / (((node.min[0] * 60 + node.min[1]) * 60) + node.min[2])
-        max_speed = 1000 / (((node.max[0] * 60 + node.max[1]) * 60) + node.max[2])
+        min_speed = node.get_min_speed()
+        max_speed = node.get_max_speed()
         return {
             "targetType": {
                 "workoutTargetTypeId": 6,

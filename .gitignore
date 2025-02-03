@@ -61,3 +61,6 @@ target/
 # session
 .garth/oauth1_token.json
 .garth/oauth2_token.json
+
+# Backup
+backup/

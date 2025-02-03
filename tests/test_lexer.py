@@ -1,5 +1,5 @@
 import pytest
-from garmin_planner import WorkoutLexer
+from wdl import WorkoutLexer
 
 def test_lexer_tokenizes_workout_step(lexer):
     input_text = "run 5.0 @ epace"

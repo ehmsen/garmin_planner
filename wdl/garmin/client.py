@@ -52,7 +52,7 @@ class GarminClient(object):
                                method="POST",
                                headers={'Content-Type': 'application/json'},
                                data=workoutJson)
-        logging.info(f"""Imported workout {resJson['workoutName']}""")
+        logging.info(f"""Imported workout {resJson['workoutName']} with workoutId: {resJson['workoutId']}""")
         return resJson
     
     def login(self) -> bool:

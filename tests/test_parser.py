@@ -1,5 +1,5 @@
 import pytest
-from garmin_planner import WorkoutParser
+from wdl import WorkoutParser
 
 def test_parser_parses_simple_workout(parser, lexer):
     input_text = '''

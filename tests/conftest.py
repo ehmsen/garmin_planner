@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from garmin_planner import WorkoutLexer, WorkoutParser, GarminVisitor
+from wdl import WorkoutLexer, WorkoutParser, GarminVisitor
 
 @pytest.fixture
 def test_data_dir():

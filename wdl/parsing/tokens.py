@@ -20,7 +20,10 @@ reserved = {
     'durations': 'DURATIONS',
     'garmin': 'GARMIN',
     'username': 'USERNAME',
-    'password': 'PASSWORD'
+    'password': 'PASSWORD',
+    'program': 'PROGRAM',
+    'week': 'WEEK',
+    'plan': 'PLAN',
 }
 
 # Token definitions
@@ -35,5 +38,7 @@ tokens = [
     'FLOAT',
 #     'TIMES',
     'ID',
-    'STRING'
+    'STRING',
+    'WEEKDAY',
+    'DATE_ISO8601',
 ] + list(reserved.values())
